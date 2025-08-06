@@ -14,6 +14,7 @@ import {
   X
 } from 'lucide-react';
 import { useAdmin } from '../../contexts/AdminContext';
+import { useAuth } from '../../contexts/AuthContext';
 import UsersManagement from '../../components/admin/UsersManagement';
 import ServicesManagement from '../../components/admin/ServicesManagement';
 import BookingsManagement from '../../components/admin/BookingsManagement';
@@ -22,7 +23,8 @@ import CategoriesManagement from '../../components/admin/CategoriesManagement';
 import VendorApplicationsManagement from '../../components/admin/VendorApplicationsManagement';
 
 const AdminDashboard = () => {
-  const { getStats, adminLogout } = useAdmin();
+  const { getStats } = useAdmin();
+  const { signOut } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -39,7 +41,7 @@ const AdminDashboard = () => {
   ];
 
   const handleLogout = () => {
-    adminLogout();
+    signOut();
     window.location.href = '/admin/login';
   };
 

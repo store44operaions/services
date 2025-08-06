@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Shield, Eye, EyeOff, Lock, Mail } from 'lucide-react';
-import { useAdmin } from '../../contexts/AdminContext';
+import { useAuth } from '../../contexts/AuthContext';
 
 const AdminLogin = () => {
   const [formData, setFormData] = useState({
@@ -13,7 +13,7 @@ const AdminLogin = () => {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const { adminLogin } = useAdmin();
+  const { signIn } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -32,15 +32,15 @@ const AdminLogin = () => {
     setIsLoading(true);
     setError('');
 
-    setTimeout(() => {
-      const success = adminLogin(formData.email, formData.password);
-      if (success) {
-        navigate(from, { replace: true });
-      } else {
-        setError('Invalid email or password');
-      }
-      setIsLoading(false);
-    }, 1000);
+    const result = await signIn(formData.email, formData.password);
+    
+    if (result.error) {
+      setError('Invalid email or password');
+    } else {
+      navigate(from, { replace: true });
+    }
+    
+    setIsLoading(false);
   };
 
   return (

@@ -6,13 +6,13 @@ import { useVendor } from '../contexts/VendorContext';
 import { useState } from 'react';
 
 const Navbar = () => {
-  const { user, logout } = useAuth();
+  const { user, signOut } = useAuth();
   const { isVendor } = useVendor();
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const handleLogout = () => {
-    logout();
+    signOut();
     navigate('/');
     setIsMenuOpen(false);
   };

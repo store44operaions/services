@@ -17,7 +17,7 @@ const Auth = () => {
   const [errors, setErrors] = useState<any>({});
   const [isLoading, setIsLoading] = useState(false);
 
-  const { login, signup } = useAuth();
+  const { signIn, signUp } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -77,29 +77,25 @@ const Auth = () => {
 
     setIsLoading(true);
 
-    try {
-      let success = false;
+    let result;
 
-      if (isLogin) {
-        success = await login(formData.email, formData.password);
-        if (!success) {
-          setErrors({ general: 'Invalid email or password' });
-        }
+    if (isLogin) {
+      result = await signIn(formData.email, formData.password);
+    } else {
+      result = await signUp(formData.email, formData.password, formData.name, formData.phone);
+    }
+
+    if (result.error) {
+      setErrors({ general: result.error.message || 'An error occurred' });
+    } else {
+      if (!isLogin) {
+        setErrors({ general: 'Please check your email to confirm your account' });
       } else {
-        success = await signup(formData);
-        if (!success) {
-          setErrors({ general: 'Email already exists' });
-        }
-      }
-
-      if (success) {
         navigate(from, { replace: true });
       }
-    } catch (error) {
-      setErrors({ general: 'Something went wrong. Please try again.' });
-    } finally {
-      setIsLoading(false);
     }
+
+    setIsLoading(false);
   };
 
   return (
