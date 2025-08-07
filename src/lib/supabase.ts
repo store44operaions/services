@@ -47,6 +47,7 @@ export interface Database {
           id: string;
           name: string;
           slug: string;
+          slug: string;
           icon: string | null;
           description: string | null;
           is_active: boolean;
@@ -56,12 +57,14 @@ export interface Database {
         Insert: {
           name: string;
           slug: string;
+          slug: string;
           icon?: string | null;
           description?: string | null;
           is_active?: boolean;
         };
         Update: {
           name?: string;
+          slug?: string;
           slug?: string;
           icon?: string | null;
           description?: string | null;

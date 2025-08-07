@@ -2,14 +2,15 @@ import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
-import { serviceCategories } from '../data/mockData';
+import { useAdmin } from '../contexts/AdminContext';
 
 const Services = () => {
   const { location } = useParams<{ location: string }>();
   const navigate = useNavigate();
+  const { categories } = useAdmin();
 
-  const handleServiceSelect = (categoryId: string) => {
-    navigate(`/service/${categoryId}?location=${location}`);
+  const handleServiceSelect = (categorySlug: string) => {
+    navigate(`/service/${categorySlug}?location=${location}`);
   };
 
   return (
@@ -32,13 +33,13 @@ const Services = () => {
 
         {/* Services Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {serviceCategories.map((category, index) => (
+          {categories.map((category, index) => (
             <motion.div
-              key={category.id}
+              key={category.slug}
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
-              onClick={() => handleServiceSelect(category.id)}
+              onClick={() => handleServiceSelect(category.slug)}
               className="relative group cursor-pointer bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:scale-105 overflow-hidden"
             >
               <div className="p-8 relative z-10">

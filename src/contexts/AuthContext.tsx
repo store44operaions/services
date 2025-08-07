@@ -104,6 +104,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signUp = async (email: string, password: string, name: string, phone?: string) => {
     try {
+      setLoading(true);
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -116,25 +117,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
 
       if (error) {
+        setLoading(false);
         return { error };
       }
 
       // Profile will be created automatically via database trigger
+      setLoading(false);
       return { error: null };
     } catch (error) {
+      setLoading(false);
       return { error };
     }
   };
 
   const signIn = async (email: string, password: string) => {
     try {
+      setLoading(true);
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
+      setLoading(false);
       return { error };
     } catch (error) {
+      setLoading(false);
       return { error };
     }
   };

@@ -2,15 +2,16 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MapPin, Search, Star, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { biharDistricts } from '../data/mockData';
+import { useAdmin } from '../contexts/AdminContext';
 
 const Landing = () => {
   const [selectedLocation, setSelectedLocation] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const navigate = useNavigate();
+  const { cities } = useAdmin();
 
-  const filteredDistricts = biharDistricts.filter(district =>
-    district.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredCities = cities.filter(city =>
+    city.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleLocationSelect = (location: string) => {
@@ -78,28 +79,28 @@ const Landing = () => {
 
           {/* Districts Grid */}
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {filteredDistricts.slice(0, 20).map((district, index) => (
+            {filteredCities.slice(0, 20).map((city, index) => (
               <motion.button
-                key={district}
+                key={city.id}
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.3, delay: index * 0.05 }}
-                onClick={() => handleLocationSelect(district)}
+                onClick={() => handleLocationSelect(city.name)}
                 className="group p-4 bg-gradient-to-br from-purple-50 to-blue-50 rounded-xl border border-gray-200 hover:border-purple-300 hover:shadow-lg transition-all duration-200 transform hover:scale-105"
               >
                 <div className="flex items-center space-x-3">
                   <MapPin className="text-purple-600 group-hover:text-purple-700" size={20} />
                   <span className="font-medium text-gray-800 group-hover:text-purple-700">
-                    {district}
+                    {city.name}
                   </span>
                 </div>
               </motion.button>
             ))}
           </div>
 
-          {searchTerm && filteredDistricts.length === 0 && (
+          {searchTerm && filteredCities.length === 0 && (
             <div className="text-center py-8">
-              <p className="text-gray-500">No districts found matching "{searchTerm}"</p>
+              <p className="text-gray-500">No cities found matching "{searchTerm}"</p>
             </div>
           )}
         </div>

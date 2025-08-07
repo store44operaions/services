@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Star, MapPin, Calendar, Clock, ArrowLeft } from 'lucide-react';
-import { mockServices } from '../data/mockData';
 import { useBooking } from '../contexts/BookingContext';
-import { useVendor } from '../contexts/VendorContext';
+import { useAdmin } from '../contexts/AdminContext';
+import { supabase } from '../lib/supabase';
 
 const ServiceDetails = () => {
   const { id } = useParams<{ id: string }>();
@@ -12,26 +12,54 @@ const ServiceDetails = () => {
   const location = searchParams.get('location');
   const navigate = useNavigate();
   const { setCurrentService } = useBooking();
-  const { vendorServices } = useVendor();
+  const { categories, cities } = useAdmin();
 
   const [services, setServices] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Get services from admin context, vendor services, or use mock data
-    const adminServices = JSON.parse(localStorage.getItem('adminServices') || 'null');
-    const allServices = [...(adminServices || []), ...vendorServices, ...mockServices];
-    
-    // Filter services by category and location
-    const filteredServices = allServices.filter((service: any) => 
-      service.category === id && service.location === location
-    );
-    
-    // Remove duplicates based on service name and location
-    const uniqueServices = filteredServices.filter((service, index, self) =>
-      index === self.findIndex(s => s.name === service.name && s.location === service.location)
-    );
-    setServices(filteredServices);
-  }, [id, location, vendorServices]);
+    const fetchServices = async () => {
+      if (!id || !location) return;
+      
+      setLoading(true);
+      try {
+        // Find the category by slug/id
+        const category = categories.find(cat => cat.slug === id || cat.id === id);
+        const city = cities.find(c => c.name === location);
+        
+        if (!category || !city) {
+          setServices([]);
+          setLoading(false);
+          return;
+        }
+
+        const { data, error } = await supabase
+          .from('services')
+          .select(`
+            *,
+            categories(name, slug),
+            cities(name),
+            vendor_profiles(business_name)
+          `)
+          .eq('category_id', category.id)
+          .eq('city_id', city.id)
+          .eq('status', 'active');
+
+        if (error) {
+          console.error('Error fetching services:', error);
+          setServices([]);
+        } else {
+          setServices(data || []);
+        }
+      } catch (error) {
+        console.error('Error fetching services:', error);
+        setServices([]);
+      }
+      setLoading(false);
+    };
+
+    fetchServices();
+  }, [id, location, categories, cities]);
 
   const handleBookNow = (service: any) => {
     setCurrentService(service);
@@ -47,6 +75,16 @@ const ServiceDetails = () => {
       />
     ));
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+      </div>
+    );
+  }
+
+  const categoryName = categories.find(cat => cat.slug === id || cat.id === id)?.name || id;
 
   return (
     <div className="min-h-screen py-8">
@@ -67,8 +105,8 @@ const ServiceDetails = () => {
           transition={{ duration: 0.6 }}
           className="text-center mb-12"
         >
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4 capitalize">
-            {id?.replace('-', ' ')} Services in {location}
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+            {categoryName} Services in {location}
           </h1>
           <p className="text-lg text-gray-600">
             Choose from our premium service providers
@@ -89,7 +127,7 @@ const ServiceDetails = () => {
                 {/* Image */}
                 <div className="md:w-1/3">
                   <img
-                    src={service.image}
+                    src={service.image_url}
                     alt={service.name}
                     className="w-full h-64 md:h-full object-cover"
                   />
@@ -107,7 +145,7 @@ const ServiceDetails = () => {
                           <div className="flex items-center space-x-4 text-sm text-gray-600 mb-3">
                             <div className="flex items-center space-x-1">
                               <MapPin size={16} />
-                              <span>{service.location}</span>
+                              <span>{service.cities?.name}</span>
                             </div>
                             <div className="flex items-center space-x-1">
                               {renderStars(service.rating)}
@@ -120,7 +158,7 @@ const ServiceDetails = () => {
                             ₹{service.price.toLocaleString()}
                           </div>
                           <div className="text-sm text-gray-500">
-                            {service.category === 'catering' ? 'per person' : 'starting from'}
+                            starting from
                           </div>
                         </div>
                       </div>
